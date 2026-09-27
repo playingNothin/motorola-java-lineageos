@@ -1,0 +1,3 @@
+add_lunch_combo lineage_java-user
+add_lunch_combo lineage_java-userdebug
+add_lunch_combo lineage_java-eng

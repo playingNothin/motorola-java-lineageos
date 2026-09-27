@@ -1,0 +1,37 @@
+# HANGDIAG diagnostic services (DEBUG build tool — dormant unless armed).
+# bootlog_diag: session-only console capture; exits itself when the misc
+#   HANGDIAG flag is absent, so normal boots are unaffected.
+# hangdiag_disarm: after a successful boot (sys.boot_completed=1) fully
+#   disarms diagnostics — stops the capture, disables the monitor via the
+#   kernel's official /proc/monitor_enable path, clears the misc flag and
+#   the one-shot BCB recovery command.
+
+# seclabel u:r:su:s0 removed from both services.
+# The merged policy has no su domain transition for init-spawned services
+# (same finding as bootlog v8), so with the seclabel both services silently
+# never ran — bootlog_diag captured nothing (test13: /metadata/bootlog was
+# never created). Running as the init domain instead; writes to
+# /metadata/bootlog are allowed by sepolicy/vendor-te/init_bootlog.te.
+service bootlog_diag /system/bin/sh /system/bin/bootlog.sh
+    user root
+    oneshot
+    class core
+
+service hangdiag_disarm /system/bin/sh /system/bin/hangdiag_disarm.sh
+    user root
+    oneshot
+    disabled
+
+on post-fs
+    # Moto G20 (java): the SPRD sysdump reboots the device on ANY kernel
+    # oops (iter12: the fscrypt key-add crypto walk oops at ~57 s killed
+    # an otherwise-COMPLETED boot, sys.boot_completed=1 had already fired).
+    # ramoops/pstore captures panics independently, so disable the forced
+    # reboot to keep the system up for live diagnosis. Remove after the
+    # crypto-list corruption is fixed.
+    write /proc/sprd_sysdump off
+    start bootlog_diag
+
+on property:sys.boot_completed=1
+    stop bootlog_diag
+    start hangdiag_disarm

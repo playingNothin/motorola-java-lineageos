@@ -1,0 +1,49 @@
+# Moto G20 (java) recovery USB bring-up.
+#
+# Two stock facts force this file:
+#  1. The Unisoc 4.14 kernel exposes no legacy android_usb f_ffs node
+#     (/sys/class/android_usb/android0 carries only f_audio_source and
+#     f_midi), so recovery's default sys.usb.configfs=0 path cannot attach
+#     adbd. The configfs gadget path is proven on this device (stock normal
+#     boot runs sys.usb.configfs=1 with /config/usb_gadget present).
+#  2. Neither the stock cmdline nor any AOSP rc sets sys.usb.controller; on
+#     stock it is set by a vendor component that does not run in recovery.
+#     recovery's configfs handlers write /config/usb_gadget/g1/UDC from
+#     ${sys.usb.controller}, so recovery needs it set explicitly.
+#
+# bootable/recovery's init.rc imports this file first; "on init" runs after
+# both "on early-init" blocks and before "on fs", so the configfs branch of
+# recovery's init.rc (gadget dirs, functionfs, ffs.adb) executes normally.
+on init
+    setprop sys.usb.configfs 1
+    setprop sys.usb.controller musb-hdrc.0.auto
+
+# recovery touchscreen support (TWRP-model).
+#
+# The touch IC drivers are out-of-tree kernel modules; stock keeps them in
+# the slotted socko partition (socko_a/socko_b — no unslotted by-name/socko)
+# and normal boot insmods them from ${ro.vendor.ko.mount.point}/socko via
+# vendor init.md.rc. Recovery parses no vendor rc and mounts no volume on
+# boot, so /dev/input has NO touchscreen node and the recovery UI has no
+# touch input /proc/bus/input/devices lists only
+# keys/vibrator/headset in recovery. The G20 panel is an Ilitek
+# ILI9882N/TXD_7806S — oreo_ili9882n.ko is the driver that registered the
+# touch input device in normal boot (test14 console, ILITEK
+# ili_input_register). FocalTech and Novatek modules follow TWRP's
+# modules.load order as panel-variant fallbacks; a non-matching driver
+# failing to probe is harmless.
+#
+# This build follows the known-good TWRP tree (Maluco-Test android_device_
+# java-twrp, Recovery-11): the modules and the touch firmware ship inside
+# recovery/root/vendor/ of THIS ramdisk (device/motorola/java/recovery/root/
+# vendor/...). Nothing mounts the real vendor over it in recovery, so
+# /vendor/lib/modules and /vendor/firmware (a ueventd firmware search path)
+# resolve to the ramdisk copies. FIRMWARE IS MANDATORY: without
+# ILITEK_FW_TXD_7806S the driver probes and registers the input device but
+# the IC never reports touches (IRQ frozen, zero events — proven live);
+# with it, full init runs (IRAM CRC ok) and touch works (190 multitouch
+# events captured, UI confirmed).
+on fs
+    insmod /vendor/lib/modules/oreo_ili9882n.ko
+    insmod /vendor/lib/modules/focaltech_touch.ko
+    insmod /vendor/lib/modules/NVT_Touch.ko

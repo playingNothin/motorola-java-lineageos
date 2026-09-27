@@ -1,0 +1,20 @@
+# Moto G20 (java): WiFi support rc.
+#
+# Pre-loading the module at boot_completed breaks the WiFi HAL, which loads
+# the driver itself via finit_module() on every enable: with the module
+# already present finit_module returns EEXIST ("Failed to load WiFi driver"
+# -> "Wifi HAL start failed" -> every framework enable aborts, proven live
+# 2026-09-26). The HAL (android.hardware.wifi@1.0-service, class hal) owns
+# the full module lifecycle: it insmods /mnt/vendor/socko/sprdwl_ng.ko via
+# the wcn service, powers the CP2, downloads the INI, and unloads on
+# disable. Verified end-to-end 2026-09-26: association to a 5GHz 802.11ac
+# AP (RSSI -25, 263Mbps link) and internet ping through the framework.
+#
+# What must stay here: the supplicant config directory. We formatted data
+# during bring-up and /data/vendor/wifi/wpa was never recreated; without it
+# the HIDL supplicant fails every addInterface ("Conf file does not exists:
+# /data/vendor/wifi/wpa/wpa_supplicant.conf" -> "Failed to create
+# ISupplicantIface 1"). Create it on every boot (mkdir is idempotent).
+on property:sys.boot_completed=1
+    mkdir /data/vendor/wifi/wpa 0770 wifi wifi
+    restorecon /data/vendor/wifi/wpa

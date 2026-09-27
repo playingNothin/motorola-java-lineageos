@@ -1,0 +1,40 @@
+# Boot console recorder v8 (DEBUG ONLY — remove after bring-up).
+# Runs as the INIT domain (no seclabel — the u:r:su:s0 transition was denied
+# by the merged policy, which is why v2–v7 silently captured nothing).
+# Permissions granted via sepolicy/vendor-te/init_bootlog.te (init writing
+# metadata_file). The metadata partition is first-stage mounted and survives
+# power loss; markers.log pins the boot stage, console.log holds the kernel
+# console (the /dev/kmsg open replays the entire buffer from boot start).
+service bootlog /system/bin/bootlog
+    user root
+    group root
+    oneshot
+
+on early-init
+    exec -- /system/bin/sh -c 'mke2fs -F -t ext4 /dev/block/mmcblk0p62 2>/dev/null; mount -t ext4 /dev/block/mmcblk0p62 /metadata 2>/dev/null; mkdir -p /metadata/bootlog; echo "bootlog v8: early-init exec reached, mount rc=$?" > /dev/kmsg; cat /dev/kmsg >> /metadata/bootlog/console.log &'
+    start bootlog
+    exec -- /system/bin/sh -c 'echo "MARK early-init done (apexd-bootstrap passed)" >> /metadata/bootlog/markers.log'
+
+on init
+    exec -- /system/bin/sh -c 'echo "MARK on init" >> /metadata/bootlog/markers.log'
+
+on early-fs
+    exec -- /system/bin/sh -c 'echo "MARK early-fs (vold starting)" >> /metadata/bootlog/markers.log'
+
+on fs
+    exec -- /system/bin/sh -c 'echo "MARK on fs done (mount_all completed)" >> /metadata/bootlog/markers.log'
+
+on post-fs
+    exec -- /system/bin/sh -c 'echo "MARK post-fs" >> /metadata/bootlog/markers.log'
+
+on late-fs
+    exec -- /system/bin/sh -c 'echo "MARK late-fs (early_hal starting)" >> /metadata/bootlog/markers.log'
+
+on post-fs-data
+    exec -- /system/bin/sh -c 'echo "MARK post-fs-data (apexd starting)" >> /metadata/bootlog/markers.log'
+
+on zygote-start
+    exec -- /system/bin/sh -c 'echo "MARK zygote-start" >> /metadata/bootlog/markers.log'
+
+on boot
+    exec -- /system/bin/sh -c 'echo "MARK on boot (adbd/class_start starting)" >> /metadata/bootlog/markers.log'

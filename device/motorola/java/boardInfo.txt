@@ -1,0 +1,4 @@
+# Moto G20 (java) — OTA android-info
+# No bootloader-version require lines during bring-up (unlocked bootloader);
+# add stock "require version-bootloader=" lines once the retail value is confirmed.
+board=p352

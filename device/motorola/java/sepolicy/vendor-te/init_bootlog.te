@@ -1,0 +1,10 @@
+# DEBUG: boot console recorder (see rootdir/bin/bootlog.sh + init.bootlog.rc).
+# init writes the boot console to /metadata/bootlog/ (the metadata partition is
+# first-stage mounted and survives power loss). Remove after bring-up.
+allow init metadata_file:dir rw_dir_perms;
+allow init metadata_file:file create_file_perms;
+# bootlog.sh's HANGDIAG arm-check reads the misc partition (dd bs=512 skip=128).
+# Base policy grants init write-only on misc_block_device (init.te:566) and the
+# domain.te neverallow is compiled out on userdebug — a positive read allow is
+# still required or the gate silently exits the capture.
+allow init misc_block_device:blk_file read;

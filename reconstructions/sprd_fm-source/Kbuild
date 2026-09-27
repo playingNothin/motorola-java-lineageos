@@ -1,0 +1,5 @@
+# sprd_fm.ko - source from ud710_bsp@W20.13.3 modules/wcn/fm/driver/fm_sdio
+# (factory Kbuild selects fm_$(BSP_BOARD_UNISOC_WCN_SOCKET) = fm_sdio; -DDEBUG)
+obj-m := sprd_fm.o
+sprd_fm-y := fmdrv_main.o fmdrv_ops.o fmdrv_rds_parser.o fm_rf_marlin3.o
+ccflags-y += -DDEBUG

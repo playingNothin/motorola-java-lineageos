@@ -1,0 +1,11 @@
+#!/system/bin/sh
+# init wrapper v3.5 (DEBUG ONLY — remove after bring-up).
+# PID1 runs with NO /proc and an empty /dev (no devtmpfs): every toybox
+# binary aborts at startup (/proc/self/exe missing), only this static shell
+# survives. Device nodes are embedded in the ramdisk cpio by
+# tools/inject_devnodes.py. ALL mounts and the hang-monitor enablement moved
+# to the system image's /system/etc/init/bootlog.rc service, which runs
+# after init mounts /proc (where toybox works).
+echo "WRAP3.5: wrapper started" > /.wraplog
+echo "WRAP3.5: wrapper started" > /dev/kmsg
+exec /system/bin/init "$@"
