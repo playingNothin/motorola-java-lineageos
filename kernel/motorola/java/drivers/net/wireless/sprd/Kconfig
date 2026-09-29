@@ -1,0 +1,10 @@
+menuconfig SPRD_WLAN
+	bool "Spreadtrum WLAN/BT drivers"
+	default y
+	---help---
+	Unisoc (Spreadtrum) WLAN/BT drivers for SPRD/Motorola platforms.
+
+if SPRD_WLAN
+source "drivers/net/wireless/sprd/sprdwl_ng/Kconfig"
+source "drivers/net/wireless/sprd/sprdbt_tty/Kconfig"
+endif

@@ -1,0 +1,9 @@
+config SPRDBT_TTY
+	tristate "Unisoc sprdbt_tty Bluetooth controller transport"
+	depends on SPRD_WLAN
+	default y
+	---help---
+	Reconstructed Unisoc BT HCI transport (tty over the WCN bus,
+	LPM, rfkill, crash dump). Hardware-validated 2026-09-26.
+	Exports wcn_reset_notifier_list — do not hot-unload while other
+	WCN modules reference it.
