@@ -6,7 +6,8 @@ Tiger T700, sharkl5pro).
 ## Status
 
 Working: baseband (data), WiFi, Bluetooth, touch, display, GPU, camera,
-sensors, GPS, FM.
+sensors, GPS.
+Untested: FM (sprd_fm).
 Known issue: Bluetooth audio routes to the speaker instead of earbuds
 (audio-policy level, unrelated to the BT transport driver).
 
@@ -29,6 +30,7 @@ health on the misc partition and can fall back to the stock binaries.
     vendor/motorola/java/     vendor extraction makefiles
     kernel/motorola/java/     kernel source (4.14.193, stock-parity)
     reconstructions/          full sources of the reconstructed drivers
+                              (sprd_fm-source: UNTESTED)
 
 The kernel builds with symbol-CRC parity against the stock boot image
 (scripts/gcc-goto.sh pins the asm-goto detection to match the vendor
