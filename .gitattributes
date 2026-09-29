@@ -1,3 +1,9 @@
+# large binaries via LFS
+*.ko filter=lfs diff=lfs merge=lfs -text
+*.img filter=lfs diff=lfs merge=lfs -text
+prebuilt/kernel/Image filter=lfs diff=lfs merge=lfs -text
+prebuilt/kernel/dtb filter=lfs diff=lfs merge=lfs -text
+prebuilt/dtbo.img filter=lfs diff=lfs merge=lfs -text
 *.so filter=lfs diff=lfs merge=lfs -text
 *.rgba filter=lfs diff=lfs merge=lfs -text
 *.yuv filter=lfs diff=lfs merge=lfs -text
