@@ -266,6 +266,7 @@ PRODUCT_COPY_FILES += \
     vendor/motorola/java/proprietary/vendor/etc/audio_policy_configuration_bluetooth_legacy_hal.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration_bluetooth_legacy_hal.xml \
     vendor/motorola/java/proprietary/vendor/etc/audio_policy_configuration_smart_pa.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration_smart_pa.xml \
     vendor/motorola/java/proprietary/vendor/etc/audio_policy_engine_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_engine_configuration.xml \
+    vendor/motorola/java/proprietary/vendor/etc/audio_policy_engine_criteria.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_engine_criteria.xml \
     vendor/motorola/java/proprietary/vendor/etc/audio_policy_engine_criterion_types.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_engine_criterion_types.xml \
     vendor/motorola/java/proprietary/vendor/etc/audio_policy_engine_default_stream_volumes.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_engine_default_stream_volumes.xml \
     vendor/motorola/java/proprietary/vendor/etc/audio_policy_engine_product_strategies.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_engine_product_strategies.xml \
@@ -638,6 +639,7 @@ PRODUCT_COPY_FILES += \
     vendor/motorola/java/proprietary/vendor/etc/vintf/manifest/vendor.sprd.hardware.thermal@2.0-service.xml:$(TARGET_COPY_OUT_VENDOR)/etc/vintf/manifest/vendor.sprd.hardware.thermal@2.0-service.xml \
     vendor/motorola/java/proprietary/vendor/etc/vintf/manifest/vendor.sprd.hardware.vdsp@1.0-service-lazy.xml:$(TARGET_COPY_OUT_VENDOR)/etc/vintf/manifest/vendor.sprd.hardware.vdsp@1.0-service-lazy.xml \
     vendor/motorola/java/proprietary/vendor/etc/vintf/manifest/vibrator.xml:$(TARGET_COPY_OUT_VENDOR)/etc/vintf/manifest/vibrator.xml \
+    vendor/motorola/java/proprietary/vendor/etc/wifi/wpa_supplicant.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/wpa_supplicant.conf \
     vendor/motorola/java/proprietary/vendor/etc/wifi_board_config.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi_board_config.ini \
     vendor/motorola/java/proprietary/vendor/etc/wifi_board_config_aa.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi_board_config_aa.ini \
     vendor/motorola/java/proprietary/vendor/etc/wifi_sar_config.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi_sar_config.ini \
