@@ -49,14 +49,29 @@ camera, sensors, touch, …) loads unmodified.
 
 ## Building the kernel
 
-    cd kernel/motorola/java
-    export CROSS_COMPILE=<lineage>/prebuilts/gcc/linux-x86/aarch64/\
-aarch64-linux-android-4.9/bin/aarch64-linux-android-
-    export CC=<lineage>/prebuilts/clang/host/linux-x86/clang-r383902/bin/clang
-    make O=out_k ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE CC=$CC \
-         CLANG_TRIPLE=aarch64-linux-gnu java_defconfig
-    make O=out_k ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE CC=$CC \
-         CLANG_TRIPLE=aarch64-linux-gnu -j$(nproc) Image modules
+The kernel is 4.14 (kernel version), built with the LineageOS prebuilt
+toolchains: GCC **4.9** (that is the toolchain version in the path below,
+not the kernel version) as CROSS_COMPILE plus clang r383902 as CC.
+
+From the root of your LineageOS tree:
+
+```bash
+LINEAGE=$PWD
+cd kernel/motorola/java
+
+export CROSS_COMPILE=$LINEAGE/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
+export CC=$LINEAGE/prebuilts/clang/host/linux-x86/clang-r383902/bin/clang
+export ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu
+
+# configure (stock config + reconstructed drivers as modules)
+make O=out_k CROSS_COMPILE=$CROSS_COMPILE CC=$CC java_defconfig
+
+# build kernel Image and the sprdwl_ng / sprdbt_tty modules
+make O=out_k CROSS_COMPILE=$CROSS_COMPILE CC=$CC -j$(nproc) Image modules
+```
+
+`out_k/arch/arm64/boot/Image` is the kernel;
+`out_k/drivers/net/wireless/sprd/*/` contain the built `.ko` modules.
 
 `java_defconfig` is the stock configuration with the reconstructed
 drivers enabled as modules (`CONFIG_SPRDWL_NG=m`,
