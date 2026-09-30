@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AccountSettings>
+    <operator spn="O2 CZ" mcc="230" mnc="{002}" mmsSupport="true" />
+</AccountSettings>

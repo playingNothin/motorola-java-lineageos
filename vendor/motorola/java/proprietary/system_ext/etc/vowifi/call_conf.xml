@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    There are the samples for customer to add the VOWIFI configuration item:
+	call with location.
+    <operator spn="CHT TW" mcc="466" mnc="092,011" withLocation="true" />
+
+    Note:
+    spn Used to mark the operator's name
+    mcc The length must be 3
+    mnc The length must be 3, and if there is more than one mnc, please seperate by ','
+    sosForceEnableLoc true or false
+					  true, will auto enable the location service when emergency call
+	                  false, as default
+ -->
+<AccountSettings>
+    <operator spn="Vivo BRA" mcc="724" mnc="{006,010,011,023}" confSubInDialog="true"
+        voiceCodec="AMR,AMR-WB,AMR-NO-OCTET-ALIGN,AMR-WB-NO-OCTET-ALIGN" />
+</AccountSettings>

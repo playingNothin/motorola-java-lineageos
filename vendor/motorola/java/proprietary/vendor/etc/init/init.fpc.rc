@@ -1,0 +1,11 @@
+
+    
+on post-fs-data
+#add for fpc fingerprint
+
+	
+	chown system system /sys/bus/platform/drivers/fpc1020/fpc1020/hw_reset
+	chown system system /sys/bus/platform/drivers/fpc1020/fpc1020/compatible_all
+	chown system system /sys/bus/platform/drivers/fpc1020/fpc1020/irq
+	chown system system /sys/bus/platform/drivers/fpc1020/fpc1020/wakeup_enable
+

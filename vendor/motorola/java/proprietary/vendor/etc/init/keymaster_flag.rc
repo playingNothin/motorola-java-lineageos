@@ -1,0 +1,10 @@
+service keymaster_flag /vendor/bin/keymaster_flag
+# Moto G20 (java): expose the stock npidevice/ lib dir to this service's
+# linker search path (init setenv; see docs/project_knowledge CURRENT_STATE
+# iter9/audit notes). The vendor namespace permits /vendor but only searches
+# /vendor/${LIB}, /hw, /egl - stock keeps libcheckkeybox.so in npidevice/.
+    setenv LD_LIBRARY_PATH /vendor/lib64/npidevice
+    class late_start
+    user system
+    group system
+    oneshot

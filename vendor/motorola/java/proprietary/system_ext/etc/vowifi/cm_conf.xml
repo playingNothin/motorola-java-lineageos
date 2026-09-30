@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AccountSettings>
+    <!-- ATT MX -->
+    <operator spn="att" mcc="334" mnc="{005,009,050,070,080,090}"
+        stayVolteInCall                 = "true"
+    />
+</AccountSettings>

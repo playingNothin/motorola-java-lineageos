@@ -1,0 +1,17 @@
+# Moto G20 (java) 2026-09-25: user radio → root. As a non-root service the
+# SPRD urild's libimpl-ril RIL_Init returned NULL within ~1ms (no channel
+# opens, no logs) and rild fell into its sleep loop — no IRadio/IExtRadio,
+# no baseband/IMEI. The identical binary run manually as root initializes
+# fully (IRadio/slot1+slot2 + IRadioConfig register, REQ_THDS active).
+# Root is a bring-up measure on this userdebug build; bisect the exact
+# denied operation (seccomp/ns/groups) before restoring the radio user.
+service vendor.ril-daemon /vendor/bin/hw/urild
+    class core
+    group radio cache inet misc audio log readproc wakelock sdcard_rw shell system dhcp inet
+    capabilities BLOCK_SUSPEND NET_ADMIN NET_RAW
+
+#STK BIP IPV6
+service vendor.stk /vendor/bin/netbox.sh stk
+    user root
+    disabled
+    oneshot

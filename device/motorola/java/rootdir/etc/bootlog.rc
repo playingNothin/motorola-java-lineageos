@@ -6,7 +6,7 @@
 #   kernel's official /proc/monitor_enable path, clears the misc flag and
 #   the one-shot BCB recovery command.
 
-# seclabel u:r:su:s0 removed from both services.
+# Moto G20 (java) 2026-09-25: seclabel u:r:su:s0 removed from both services.
 # The merged policy has no su domain transition for init-spawned services
 # (same finding as bootlog v8), so with the seclabel both services silently
 # never ran — bootlog_diag captured nothing (test13: /metadata/bootlog was

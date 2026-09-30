@@ -1,0 +1,199 @@
+<imsUserAgent version="1.0" type="device">
+    <!-- EMEA -->
+    <config value="1">
+        <!-- BT UK -->
+        <element>23430</element>
+        <!-- Virgin UK -->
+        <element>23438</element>
+        <!-- EE UK -->
+        <element>23430</element>
+        <element>23433</element>
+    </config>
+    <!-- LATAM -->
+    <config value="2">
+        <!-- Antel UY -->
+        <element>74801</element>
+        <!-- Tigo SV -->
+        <element>70603</element>
+        <!-- Tigo PY -->
+        <element>74404</element>
+        <!-- Personal PY -->
+        <element>74405</element>
+        <!-- Open Mobile PR -->
+        <element>330120</element>
+        <!-- Entel PE -->
+        <element>71617</element>
+        <!-- AT&T MX (Iusacell and Nextel) -->
+        <element>334050</element>
+        <element>334090</element>
+        <!-- Altan-Axtel MX -->
+        <element>334130</element>
+        <!-- Altan MX -->
+        <element>334140</element>
+        <!-- Tigo HN -->
+        <element>70802</element>
+        <element>708002</element>
+        <!-- Tigo GT -->
+        <element>70402</element>
+        <!-- CNT EC -->
+        <element>74002</element>
+        <!-- ICE Kölbi CR -->
+        <element>71201</element>
+        <!-- WOM CO -->
+        <element>732360</element>
+        <!-- Tigo CO -->
+        <element>732103</element>
+        <element>732111</element>
+        <!-- ETB CO -->
+        <element>732187</element>
+        <!-- Avantel CO -->
+        <element>732130</element>
+        <!-- WOM CL (former NII) -->
+        <element>73009</element>
+        <!-- Entel CL -->
+        <element>73001</element>
+        <element>73010</element>
+        <!-- TIM BR -->
+        <element>72402</element>
+        <element>72403</element>
+        <!-- Surf BR -->
+        <element>72417</element>
+        <!-- Porto Conecta BR -->
+        <element>72454</element>
+        <!-- Oi BR -->
+        <element>72416</element>
+        <element>72424</element>
+        <!-- Nextel BR -->
+        <element>72439</element>
+        <!-- Viva BO -->
+        <element>73601</element>
+        <!-- Tigo BO -->
+        <element>73603</element>
+        <!-- Entel BO -->
+        <element>73602</element>
+        <!-- Tuenti AR (MVNO from Movistar) -->
+        <element>72201</element>
+        <element>722010</element>
+        <!-- Personal AR -->
+        <element>72234</element>
+        <element>722341</element>
+        <element>722340</element>
+        <!-- Nuestro AR (MVNO from Personal) -->
+        <element>72236</element>
+        <!-- Mov. VZ -->
+        <element>73404</element>
+        <!-- Mov. UY -->
+        <element>74807</element>
+        <!-- Mov. PE -->
+        <element>71606</element>
+        <!-- Mov. MX subsidy locked -->
+        <!-- Mov. MX unlocked -->
+        <element>33403</element>
+        <element>334030</element>
+        <!-- Mov. EC -->
+        <element>74000</element>
+        <!-- Mov. CO -->
+        <element>73212</element>
+        <element>732123</element>
+        <!-- Mov. CL -->
+        <element>730-02</element>   
+        <!-- Vivo BR -->
+        <element>72406</element>
+        <element>72410</element>
+        <element>72411</element>
+        <element>72423</element>
+        <!-- Mov. AR -->
+        <element>72207</element>
+        <!-- Claro UY -->
+        <element>74810</element>
+        <!-- Claro SV -->
+        <element>70601</element>
+        <!-- Claro PY -->
+        <element>74402</element>
+        <!-- Claro PR -->
+        <element>330110</element>
+        <!-- Claro PE -->
+        <element>71610</element>
+        <!-- Claro PA -->
+        <element>71403</element>
+        <!-- Telcel MX unlocked -->
+        <!-- Telcel MX subsidy locked -->
+        <element>334020</element>
+        <!-- Claro NI -->
+        <element>71021</element>
+        <element>71073</element>
+        <!-- Claro HN -->
+        <element>708001</element>
+        <!-- Claro GT -->
+        <element>70401</element>
+        <element>70403</element>
+        <!-- Claro EC -->
+        <element>74001</element>
+        <!-- Claro DO -->
+        <element>37002</element>
+        <!-- Claro CR -->
+        <element>71203</element>
+        <!-- Claro CO -->
+        <element>732101</element>
+        <!-- Claro CL -->
+        <element>73003</element>
+        <!-- Claro BR -->
+        <element>72405</element>
+        <!-- Claro AR -->
+        <element>722310</element>
+    </config>
+    <!-- DT -->
+    <config value="3">
+        <!-- DT AL -->
+        <element>27601</element>
+        <!-- DT MK -->
+        <element>29401</element>
+        <!-- DT RO -->
+        <element>22603</element>
+        <!-- DT SK -->
+        <element>23102</element>
+        <!-- DT RS -->
+        <element>22004</element>
+        <!-- DT ME -->
+        <element>29702</element>
+        <!-- DT HR -->
+        <element>21901</element>
+        <!-- DT HU -->
+        <element>21603</element>
+        <!-- DT AT -->
+        <element>23203</element>
+        <!-- DT CZ -->
+        <element>23001</element>
+        <!-- DT GR -->
+        <element>20201</element>
+        <!-- DT NL -->
+        <element>20416</element>
+        <element>20420</element>
+        <!-- DT PL -->
+        <element>26002</element>
+        <!-- DT DE -->
+        <element>26201</element>
+    </config>
+    <!-- Play Poland -->
+    <config value="4">
+        <element>26006</element>
+        <element>26098</element>
+    </config>
+    <!-- CU -->
+    <config value="5">
+        <element>46001</element>
+        <element>46006</element>
+        <element>46009</element>
+    </config>
+    <!-- CT -->
+    <config value="6">
+        <element>46003</element>
+        <element>46005</element>
+        <element>46011</element>
+    </config>
+    <!-- Telstra -->
+    <config value="7">
+        <element>50501</element>
+        <element>50511</element>
+    </config>
+</imsUserAgent>

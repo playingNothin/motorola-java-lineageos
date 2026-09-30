@@ -1,0 +1,17 @@
+# module_fallback — persistent per-module canary/fallback system
+# Reads misc sector 131 for module health state.
+# Stages the state-selected module build (reconstructed or stock) onto
+# the socko partition BEFORE the stock vendor preloads insmod it.
+#
+# Stock load contract: the vendor rcs (wcn.rc / init.md.rc / camera.rc)
+# insmod the socko modules at `on post-fs` — measured t=4.7 s on device —
+# and the HALs then find the drivers already up (their load path
+# tolerates the already-loaded case). System rcs are parsed before
+# vendor rcs, so a synchronous exec at `on post-fs` stages the canary's
+# chosen build ahead of every vendor insmod. exec_background raced and
+# lost that race on every previous boot.
+on post-fs
+    exec - root root -- /system/bin/module_fallback.sh boot
+
+on property:sys.boot_completed=1
+    exec_background - root root -- /system/bin/module_fallback.sh verify

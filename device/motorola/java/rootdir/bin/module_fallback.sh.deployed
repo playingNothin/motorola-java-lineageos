@@ -1,0 +1,342 @@
+#!/system/bin/sh
+# module_fallback.sh — persistent per-module fallback / canary system
+#
+# Storage: misc partition sector 131 (offset 67072), text format.
+# Coexists with HANGDIAG (sectors 128-130) and BCB (sector 0).
+#
+# Usage:
+#   module_fallback.sh boot          — called from init at post-fs-data
+#   module_fallback.sh --status      — print the fallback table
+#   module_fallback.sh --clear NAME  — re-enable REBUILT for a module
+#   module_fallback.sh --clear-all   — reset all modules to REBUILT
+#   module_fallback.sh --mark-fail N — manually mark a boot failure
+#
+# Misc layout (sectors, 512 B each):
+#   0       BCB (do not touch)
+#   128     HANGDIAG_ON flag (do not touch)
+#   129/130 HANGDIAG status (do not touch)
+#   131     fallback table: magic + LOADING marker + per-module lines
+#   132     reserved (future expansion)
+#
+# On-disk format (text, one 512-byte sector):
+#   FBMOD_v1
+#   LOADING <module_name|NONE>
+#   M <module> <REBUILT|STOCK> f=<N> o=<N> last=<reason>
+#   END
+
+MISC=""
+FB_SECTOR=131
+FB_MAGIC="FBMOD_v1"
+FB_FAIL_THRESHOLD=3
+FB_MODULES="sprdwl_ng sprdbt_tty"
+SOCKO="/mnt/vendor/socko"
+STOCK_DIR="${SOCKO}/stock_fallback"
+
+# --- find the misc device ---
+find_misc() {
+    for m in /dev/block/by-name/misc /dev/block/mmcblk0p3; do
+        if [ -e "$m" ]; then
+            MISC="$m"
+            return 0
+        fi
+    done
+    # fallback: scan by-name
+    for m in /dev/block/by-name/misc*; do
+        if [ -e "$m" ]; then
+            MISC="$m"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# --- read the fallback table from misc ---
+fb_read() {
+    dd if="$MISC" bs=512 skip=$FB_SECTOR count=1 2>/dev/null
+}
+
+# --- write the fallback table to misc ---
+fb_write() {
+    # $1 = content (text). Pads to 512 bytes and writes.
+    local content="$1"
+    local tmp="/tmp/.fb_write.$$"
+    printf '%s' "$content" > "$tmp"
+    # pad to 512 bytes
+    local cur=$(wc -c < "$tmp")
+    local pad=$((512 - cur))
+    if [ "$pad" -gt 0 ]; then
+        dd if=/dev/zero bs=1 count=$pad 2>/dev/null >> "$tmp"
+    fi
+    dd if="$tmp" of="$MISC" bs=512 seek=$FB_SECTOR conv=notrunc 2>/dev/null
+    rm -f "$tmp"
+    sync
+}
+
+# --- check magic ---
+fb_check_magic() {
+    fb_read | head -1 | grep -q "$FB_MAGIC"
+}
+
+# --- get the LOADING value ---
+fb_get_loading() {
+    fb_read | grep "^LOADING " | head -1 | sed 's/^LOADING //' | tr -d ' \r\n'
+}
+
+# --- get a module's field value (state, f=N, o=N, last=...) ---
+fb_get_field() {
+    # $1=module $2=field prefix (e.g. "f=")
+    fb_read | grep "^M $1 " | tr ' ' '\n' | grep "^$2" | head -1 | sed "s/^$2//"
+}
+
+# --- get a module's state ---
+fb_get_state() {
+    fb_read | grep "^M $1 " | head -1 | awk '{print $3}'
+}
+
+# --- set a module's entry (creates if missing, updates if exists) ---
+fb_set_module() {
+    local module=$1 state=$2 fails=$3 oks=$4 last=$5
+    local loading=$(fb_get_loading)
+    local old_table=$(fb_read | grep -v "^M $module " | grep -v "^FBMOD\|^LOADING\|^END\|^$")
+    local new_table="${FB_MAGIC}
+LOADING ${loading}
+M ${module} ${state} f=${fails} o=${oks} last=${last}"
+    if [ -n "$old_table" ]; then
+        new_table="${new_table}
+${old_table}"
+    fi
+    new_table="${new_table}
+END"
+    fb_write "$new_table"
+}
+
+# --- remove the currently_loading marker ---
+fb_clear_loading() {
+    local table=$(fb_read | sed 's/^LOADING .*$/LOADING NONE/')
+    fb_write "$table"
+}
+
+# --- increment fail count for a module and mark STOCK ---
+fb_record_failure() {
+    local module=$1
+    local reason=${2:-"unknown"}
+    local old_fails=$(fb_get_field "$module" "f=")
+    local old_oks=$(fb_get_field "$module" "o=")
+    local new_fails=$(( ${old_fails:-0} + 1 ))
+    fb_set_module "$module" "STOCK" "$new_fails" "${old_oks:-0}" "$reason"
+}
+
+# --- increment ok count for a module ---
+fb_record_ok() {
+    local module=$1
+    local old_fails=$(fb_get_field "$module" "f=")
+    local old_oks=$(fb_get_field "$module" "o=")
+    local new_oks=$(( ${old_oks:-0} + 1 ))
+    fb_set_module "$module" "REBUILT" "${old_fails:-0}" "$new_oks" "NONE"
+}
+
+# --- ensure a module entry exists (initialise if missing) ---
+fb_ensure_entry() {
+    for module in $FB_MODULES; do
+        if ! fb_read | grep -q "^M $module "; then
+            fb_set_module "$module" "REBUILT" 0 0 "NONE"
+        fi
+    done
+}
+
+# --- handle the currently_loading marker from the previous boot ---
+fb_handle_crash() {
+    local loading=$(fb_get_loading)
+    if [ -z "$loading" ] || [ "$loading" = "NONE" ]; then
+        return 0
+    fi
+    # The previous boot set currently_loading but never cleared it.
+    # This means the module crashed or hung during init.
+    echo "module_fallback: module '$loading' failed to complete init (detected from currently_loading marker)"
+    fb_record_failure "$loading" "module_init_crash"
+    fb_clear_loading
+}
+
+# --- copy the appropriate .ko for a module ---
+fb_stage_module() {
+    local module=$1
+    local state=$(fb_get_state "$module")
+    local active_ko="${SOCKO}/${module}.ko"
+    local stock_ko="${STOCK_DIR}/${module}.ko"
+
+    if [ "$state" = "STOCK" ] && [ -f "$stock_ko" ]; then
+        # Copy the stock module over the active path
+        if [ -f "$active_ko" ]; then
+            cp "$stock_ko" "$active_ko" 2>/dev/null
+            echo "module_fallback: staged STOCK ${module}.ko"
+        fi
+    elif [ "$state" = "REBUILT" ]; then
+        # Ensure the reconstructed module is at the active path
+        # (it should already be there — this is a no-op unless
+        #  a previous fallback overwrote it)
+        local recon_ko="/data/local/tmp/recon_${module}.ko"
+        local fixed_ko="${SOCKO}/rebuilt/${module}.ko"
+        if [ -f "$fixed_ko" ]; then
+            cp "$fixed_ko" "$active_ko" 2>/dev/null
+            echo "module_fallback: staged REBUILT ${module}.ko"
+        fi
+        # If no explicit rebuilt copy exists, the active path
+        # already has the reconstructed module (it's the default)
+    fi
+}
+
+# --- insmod with currently_loading marker ---
+fb_insmod() {
+    local module=$1
+    local ko_path="${SOCKO}/${module}.ko"
+    if [ ! -f "$ko_path" ]; then
+        echo "module_fallback: ${ko_path} not found, skipping"
+        return 1
+    fi
+    # Write the currently_loading marker
+    local table=$(fb_read | sed "s/^LOADING .*$/LOADING ${module}/")
+    fb_write "$table"
+    # Load the module
+    if insmod "$ko_path" 2>/dev/null; then
+        echo "module_fallback: loaded ${module}"
+        # Record success
+        fb_record_ok "$module"
+        fb_clear_loading
+        return 0
+    else
+        echo "module_fallback: insmod ${module} FAILED"
+        # Record failure
+        fb_record_failure "$module" "insmod_failed"
+        fb_clear_loading
+        return 1
+    fi
+}
+
+# --- the boot sequence ---
+do_boot() {
+    # Find misc
+    if ! find_misc; then
+        echo "module_fallback: misc partition not found, skipping fallback"
+        return 1
+    fi
+
+    # Check magic
+    if ! fb_check_magic; then
+        echo "module_fallback: magic invalid or first boot — initialising"
+        # Write a fresh table with all modules as REBUILT
+        local fresh="${FB_MAGIC}
+LOADING NONE"
+        for module in $FB_MODULES; do
+            fresh="${fresh}
+M ${module} REBUILT f=0 o=0 last=NONE"
+        done
+        fresh="${fresh}
+END"
+        fb_write "$fresh"
+    fi
+
+    # Handle any crash from the previous boot
+    fb_handle_crash
+
+    # Ensure all modules have entries
+    fb_ensure_entry
+
+    # Stage the correct .ko files
+    for module in $FB_MODULES; do
+        fb_stage_module "$module"
+    done
+
+    # Load modules
+    for module in $FB_MODULES; do
+        local state=$(fb_get_state "$module")
+        local fails=$(fb_get_field "$module" "f=")
+
+        if [ "$state" = "STOCK" ] && [ "${fails:-0}" -ge "$FB_FAIL_THRESHOLD" ]; then
+            echo "module_fallback: ${module} is in STOCK fallback (fails=${fails}), skipping reconstructed load"
+            # Try to load the stock module if available
+            local stock_ko="${STOCK_DIR}/${module}.ko"
+            if [ -f "$stock_ko" ]; then
+                insmod "$stock_ko" 2>/dev/null && echo "module_fallback: loaded STOCK ${module}"
+            fi
+        else
+            # Load the reconstructed module
+            fb_insmod "$module"
+        fi
+    done
+
+    echo "module_fallback: boot sequence complete"
+}
+
+# --- print status ---
+do_status() {
+    if ! find_misc; then
+        echo "ERROR: misc partition not found"
+        return 1
+    fi
+    if ! fb_check_magic; then
+        echo "No valid fallback table found (magic mismatch)"
+        return 1
+    fi
+    echo "=== Module Fallback Status ==="
+    fb_read | grep -v "^$" | head -10
+    echo "=== per-module detail ==="
+    for module in $FB_MODULES; do
+        local state=$(fb_get_state "$module")
+        local fails=$(fb_get_field "$module" "f=")
+        local oks=$(fb_get_field "$module" "o=")
+        local last=$(fb_get_field "$module" "last=")
+        echo "  ${module}: state=${state} fails=${fails} oks=${oks} last_fail=${last}"
+    done
+}
+
+# --- clear a module's fallback ---
+do_clear() {
+    local module=$1
+    if ! find_misc; then
+        echo "ERROR: misc not found"
+        return 1
+    fi
+    if ! fb_check_magic; then
+        echo "ERROR: no valid fallback table"
+        return 1
+    fi
+    fb_set_module "$module" "REBUILT" "$(fb_get_field "$module" "f=")" "$(fb_get_field "$module" "o=")" "NONE"
+    fb_clear_loading
+    echo "module_fallback: ${module} re-enabled as REBUILT (fail count preserved)"
+}
+
+# --- clear all ---
+do_clear_all() {
+    if ! find_misc; then
+        echo "ERROR: misc not found"
+        return 1
+    fi
+    for module in $FB_MODULES; do
+        fb_set_module "$module" "REBUILT" 0 0 "NONE"
+    done
+    fb_clear_loading
+    echo "module_fallback: all modules reset to REBUILT"
+}
+
+# --- main dispatch ---
+case "$1" in
+    boot)
+        do_boot
+        ;;
+    --status)
+        do_status
+        ;;
+    --clear)
+        do_clear "$2"
+        ;;
+    --clear-all)
+        do_clear_all
+        ;;
+    --mark-fail)
+        find_misc && fb_handle_crash_test "$2"
+        ;;
+    *)
+        echo "Usage: module_fallback.sh {boot|--status|--clear MODULE|--clear-all|--mark-fail MODULE}"
+        exit 1
+        ;;
+esac

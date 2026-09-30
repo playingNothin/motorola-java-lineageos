@@ -55,6 +55,26 @@ PRODUCT_COPY_FILES += \
     $(DEVICE_PATH)/rootdir/etc/fstab.p352:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.p352 \
     $(DEVICE_PATH)/rootdir/etc/fstab.ums512_1h10:$(TARGET_COPY_OUT_RECOVERY)/root/first_stage_ramdisk/fstab.ums512_1h10
 
+# module fallback / canary system
+PRODUCT_COPY_FILES += \
+    $(DEVICE_PATH)/rootdir/bin/module_fallback.sh:$(TARGET_COPY_OUT_SYSTEM)/bin/module_fallback.sh \
+    $(DEVICE_PATH)/rootdir/etc/init.java-fallback.rc:$(TARGET_COPY_OUT_SYSTEM)/etc/init/init.java-fallback.rc
+
+# Radio module builds the canary stages onto the socko partition.
+# The vendor HALs load sprdwl_ng / sprdbt_tty themselves from socko via
+# finit_module; recon = reconstructed drivers (current test build),
+# stock = known-good baseline from the stock socko partition.
+PRODUCT_COPY_FILES += \
+    $(DEVICE_PATH)/radio_modules/recon/sprdwl_ng.ko:$(TARGET_COPY_OUT_SYSTEM)/lib/modules/recon/sprdwl_ng.ko \
+    $(DEVICE_PATH)/radio_modules/recon/sprdbt_tty.ko:$(TARGET_COPY_OUT_SYSTEM)/lib/modules/recon/sprdbt_tty.ko \
+    $(DEVICE_PATH)/radio_modules/stock/sprdwl_ng.ko:$(TARGET_COPY_OUT_SYSTEM)/lib/modules/stock/sprdwl_ng.ko \
+    $(DEVICE_PATH)/radio_modules/stock/sprdbt_tty.ko:$(TARGET_COPY_OUT_SYSTEM)/lib/modules/stock/sprdbt_tty.ko
+
+# GPU: stock mali_gondul.ko lives on the socko partition (not in the
+# kernel tree); load it before surfaceflinger starts
+PRODUCT_COPY_FILES += \
+    $(DEVICE_PATH)/rootdir/etc/init.java-graphics.rc:$(TARGET_COPY_OUT_SYSTEM)/etc/init/init.java-graphics.rc
+
 # AVB GSI keys referenced by the fstab system entry (match stock ramdisk)
 PRODUCT_COPY_FILES += \
     $(DEVICE_PATH)/rootdir/avb/q-gsi.avbpubkey:$(TARGET_COPY_OUT_RAMDISK)/first_stage_ramdisk/avb/q-gsi.avbpubkey \

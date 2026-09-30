@@ -1,0 +1,10 @@
+# Moto G20 (java): GPU driver load
+#
+# The Mali GPU driver is not part of the kernel tree. It ships as the
+# stock binary module mali_gondul.ko (r25p1-01bet0) on the preserved
+# socko vendor-module partition, alongside the other stock SoC modules.
+# Without this line surfaceflinger aborts with
+# 'eglQueryStringImplementationANDROID(EGL_VERSION) failed' and the
+# boot stalls at the logo.
+on post-fs
+    insmod ${ro.vendor.ko.mount.point}/socko/mali_gondul.ko

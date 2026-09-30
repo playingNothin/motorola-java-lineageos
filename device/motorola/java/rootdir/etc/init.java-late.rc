@@ -1,5 +1,6 @@
 # Moto G20 (java): WiFi support rc.
 #
+# 2026-09-26: the sprdwl_ng insmod that used to live here has been REMOVED.
 # Pre-loading the module at boot_completed breaks the WiFi HAL, which loads
 # the driver itself via finit_module() on every enable: with the module
 # already present finit_module returns EEXIST ("Failed to load WiFi driver"

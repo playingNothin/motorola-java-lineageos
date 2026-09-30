@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SecuritySettings>
+    <operator spn="O2 CZ" mcc="230" mnc="{002}">
+        <apns>
+            <apn type="normal,sos" name="ims" />
+            <apn type="ut" name="xcap" prefIPv4="true" />
+            <apn type="mms" name="mms" prefIPv4="true" ipVersion="1" confPayloadSequence="3" />
+        </apns>
+        <profile dhType="DHGROUP_2048" withProposal2="true" prfType="HMAC_SHA2_256"
+            integType="HMAC_SHA2_256_128" ipsecIntegType="HMAC_SHA2_256_128" ipVersion="2"
+            confPayloadSequence="10,16390" withoutInitNotify="ut,mms" />
+    </operator>
+</SecuritySettings>

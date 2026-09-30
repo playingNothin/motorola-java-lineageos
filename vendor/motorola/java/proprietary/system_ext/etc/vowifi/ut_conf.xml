@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AccountSettings>
+    <operator spn="Telia NO" mcc="242" mnc="{002,005}" utSupport="false" xcapServerPort="80"
+        bsfServerPort="80" bsfPrefix="bsf" />
+</AccountSettings>
